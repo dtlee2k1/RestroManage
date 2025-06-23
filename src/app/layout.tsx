@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { cn } from '@/lib/utils'
+import { AppProvider } from '@/components/app-provider'
 
 const fontSans = Inter({
   variable: '--font-geist-sans',
@@ -24,8 +25,8 @@ export default function RootLayout({
     <html lang='en' suppressHydrationWarning>
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster />
+          <AppProvider>{children}</AppProvider>
+          <Toaster position='top-right' duration={1000} />
         </ThemeProvider>
       </body>
     </html>
