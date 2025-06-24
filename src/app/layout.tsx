@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className={cn('min-h-screen bg-background font-sans antialiased', fontSans.variable)}>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem disableTransitionOnChange>
           <AppProvider>{children}</AppProvider>
-          <Toaster position='top-right' duration={1000} />
+          <Toaster position='top-right' duration={3000} />
         </ThemeProvider>
       </body>
     </html>
