@@ -35,3 +35,15 @@ export const handleErrorApi = ({
     })
   }
 }
+
+const isBrowser = typeof window !== 'undefined'
+
+export const getAccessTokenFromLocalStorage = () => {
+  if (!isBrowser) return null
+  return localStorage.getItem('accessToken')
+}
+
+export const getRefreshTokenFromLocalStorage = () => {
+  if (!isBrowser) return null
+  return localStorage.getItem('refreshToken')
+}
