@@ -1,9 +1,16 @@
 import accountApiRequest from '@/apiRequests/account'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
-export function useAccountProfile() {
+export function useAccountMeQuery() {
   return useQuery({
     queryKey: ['account-profile'],
     queryFn: accountApiRequest.me
+  })
+}
+
+export function useUpdateMeMutation() {
+  return useMutation({
+    mutationKey: ['account-profile'],
+    mutationFn: accountApiRequest.updateMe
   })
 }
