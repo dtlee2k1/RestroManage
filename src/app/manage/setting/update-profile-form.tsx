@@ -17,8 +17,8 @@ import { handleErrorApi } from '@/lib/utils'
 
 export default function UpdateProfileForm() {
   const { data, refetch } = useAccountMeQuery()
-  const uploadMedia = useUploadMediaMutation()
-  const updateMe = useUpdateMeMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
+  const updateMeMutation = useUpdateMeMutation()
   const [file, setFile] = useState<File | null>(null)
   const avatarInputRef = useRef<HTMLInputElement>(null)
 
@@ -42,18 +42,18 @@ export default function UpdateProfileForm() {
   }
 
   const onSubmit = async (values: UpdateMeBodyType) => {
-    if (updateMe.isPending) return
+    if (updateMeMutation.isPending) return
 
     try {
       let avatarUrl = values.avatar
       if (file) {
         const formData = new FormData()
         formData.append('file', file)
-        const uploadRes = await uploadMedia.mutateAsync(formData)
+        const uploadRes = await uploadMediaMutation.mutateAsync(formData)
         avatarUrl = uploadRes.payload.data
       }
 
-      const result = await updateMe.mutateAsync({
+      const result = await updateMeMutation.mutateAsync({
         ...values,
         avatar: avatarUrl
       })

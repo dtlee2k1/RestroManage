@@ -19,19 +19,20 @@ export async function POST(request: Request) {
       expires: decodedAccessToken.exp * 1000,
       httpOnly: true,
       secure: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      path: '/'
     })
     cookieStore.set('refreshToken', refreshToken, {
       expires: decodedRefreshToken.exp * 1000,
       httpOnly: true,
       secure: true,
-      sameSite: 'lax'
+      sameSite: 'lax',
+      path: '/'
     })
 
     return Response.json(payload)
   } catch (error) {
     if (error instanceof HttpError) {
-      console.log(error.payload)
       return Response.json(error.payload, {
         status: error.status
       })
