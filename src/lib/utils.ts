@@ -81,7 +81,10 @@ export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; on
   const tokenTTL = decodedAccessToken.exp - decodedAccessToken.iat
 
   // refresh token expired
-  if (decodedRefreshToken.exp < now) return
+  if (decodedRefreshToken.exp < now) {
+    removeTokensFromLocalStorage()
+    return params?.onError?.()
+  }
 
   // access token is nearly expiry
   if (remaining < tokenTTL / 3 && !isRefreshing) {

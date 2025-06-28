@@ -10,11 +10,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useLoginMutation } from '@/queries/useAuth'
 import { toast } from 'sonner'
 import { handleErrorApi } from '@/lib/utils'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
+import { useAppContext } from '@/components/app-provider'
 
 export default function LoginForm() {
   const loginMutation = useLoginMutation()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isClearTokens = searchParams.get('clearTokens')
+  const { setIsAuth } = useAppContext()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -29,6 +34,7 @@ export default function LoginForm() {
     try {
       const res = await loginMutation.mutateAsync(data)
       toast.success(res.payload.message)
+      setIsAuth(true)
       router.push('/manage/dashboard')
     } catch (error) {
       handleErrorApi({
@@ -37,6 +43,12 @@ export default function LoginForm() {
       })
     }
   }
+
+  useEffect(() => {
+    if (isClearTokens) {
+      setIsAuth(false)
+    }
+  }, [isClearTokens, setIsAuth])
 
   return (
     <Card className='w-full max-w-sm'>

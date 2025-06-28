@@ -2,19 +2,17 @@ import { NextResponse, NextRequest } from 'next/server'
 
 const privatePaths = ['/manage']
 const authPaths = ['/login']
-const forbiddenClientPaths = ['/logout', '/refresh-token']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const accessToken = request.cookies.get('accessToken')?.value
   const refreshToken = request.cookies.get('refreshToken')?.value
 
-  if (forbiddenClientPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
   if (privatePaths.some((path) => pathname.startsWith(path)) && !refreshToken) {
-    return NextResponse.redirect(new URL('login', request.url))
+    const url = new URL('/login', request.url)
+    url.searchParams.set('clearTokens', 'true')
+
+    return NextResponse.redirect(url)
   }
 
   if (authPaths.some((path) => pathname.startsWith(path)) && refreshToken) {
@@ -33,5 +31,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/manage/:path*', '/login', '/menu', '/orders', '/logout', '/refresh-token']
+  matcher: ['/manage/:path*', '/login', '/menu', '/orders']
 }

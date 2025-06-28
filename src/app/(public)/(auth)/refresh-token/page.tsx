@@ -2,7 +2,7 @@
 
 import { checkAndRefreshToken, getRefreshTokenFromLocalStorage } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 export default function RefreshToken() {
   const router = useRouter()
@@ -17,6 +17,8 @@ export default function RefreshToken() {
           router.push(redirectPathname || '/')
         }
       })
+    } else {
+      router.push('/')
     }
   }, [refreshTokenFromURL, redirectPathname, router])
 
