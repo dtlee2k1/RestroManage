@@ -3,6 +3,8 @@ import { clsx, type ClassValue } from 'clsx'
 import { UseFormSetError } from 'react-hook-form'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
+import jwt from 'jsonwebtoken'
+import authApiRequest from '@/apiRequests/auth'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -62,4 +64,38 @@ export const removeTokensFromLocalStorage = () => {
   if (!isBrowser) return
   localStorage.removeItem('accessToken')
   localStorage.removeItem('refreshToken')
+}
+
+let isRefreshing = false
+export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; onError?: () => void }) => {
+  const accessToken = getAccessTokenFromLocalStorage()
+  const refreshToken = getRefreshTokenFromLocalStorage()
+
+  if (!accessToken || !refreshToken) return
+
+  const decodedAccessToken = jwt.decode(accessToken) as { exp: number; iat: number }
+  const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number; iat: number }
+
+  const now = Math.round(Date.now() / 1000)
+  const remaining = decodedAccessToken.exp - now
+  const tokenTTL = decodedAccessToken.exp - decodedAccessToken.iat
+
+  // refresh token expired
+  if (decodedRefreshToken.exp < now) return
+
+  // access token is nearly expiry
+  if (remaining < tokenTTL / 3 && !isRefreshing) {
+    isRefreshing = true
+    try {
+      const result = await authApiRequest.refreshToken()
+      const { accessToken, refreshToken } = result.payload.data
+      setAccessTokenToLocalStorage(accessToken)
+      setRefreshTokenToLocalStorage(refreshToken)
+      params?.onSuccess?.()
+    } catch {
+      params?.onError?.()
+    } finally {
+      isRefreshing = false
+    }
+  }
 }
