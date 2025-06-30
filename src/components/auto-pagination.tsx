@@ -51,13 +51,7 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
       }
       return null
     }
-    /*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Renders a pagination ellipsis after the current page if dotAfter is false
-     * @param index The index of the page
-     * @returns A pagination ellipsis or null
-     */
-    /*******  7343bbb6-0b3a-40db-a31d-ae434a761af6  *******/
+
     const renderDotAfter = (index: number) => {
       if (!dotAfter) {
         dotAfter = true

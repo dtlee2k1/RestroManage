@@ -18,8 +18,15 @@ import { useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { useAddAccountMutation } from '@/queries/useAccount'
+import { handleErrorApi } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export default function AddEmployee() {
+  const addAccountMutation = useAddAccountMutation()
+  const uploadMediaMutation = useUploadMediaMutation()
+
   const [file, setFile] = useState<File | null>(null)
   const [open, setOpen] = useState(false)
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
@@ -42,6 +49,38 @@ export default function AddEmployee() {
     return avatar
   }, [file, avatar])
 
+  const onReset = () => {
+    form.reset()
+    setFile(null)
+  }
+
+  const onSubmit = async (values: CreateEmployeeAccountBodyType) => {
+    if (addAccountMutation.isPending) return
+
+    try {
+      let avatarUrl = values.avatar
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const uploadRes = await uploadMediaMutation.mutateAsync(formData)
+        avatarUrl = uploadRes.payload.data
+      }
+
+      const result = await addAccountMutation.mutateAsync({
+        ...values,
+        avatar: avatarUrl
+      })
+      toast.success(result.payload.message)
+      onReset()
+      setOpen(false)
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
+
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
@@ -56,12 +95,18 @@ export default function AddEmployee() {
           <DialogDescription>Các trường tên, email, mật khẩu là bắt buộc</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='add-employee-form'>
+          <form
+            noValidate
+            className='grid auto-rows-max items-start gap-4 md:gap-8'
+            id='add-employee-form'
+            onSubmit={form.handleSubmit(onSubmit)}
+            onReset={onReset}
+          >
             <div className='grid gap-4 py-4'>
               <FormField
                 control={form.control}
                 name='avatar'
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className='flex gap-2 items-start justify-start'>
                       <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
@@ -76,7 +121,6 @@ export default function AddEmployee() {
                           const file = e.target.files?.[0]
                           if (file) {
                             setFile(file)
-                            field.onChange('http://localhost:3000/' + file.name)
                           }
                         }}
                         className='hidden'
@@ -99,9 +143,9 @@ export default function AddEmployee() {
                 name='name'
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
+                    <div className='grid grid-cols-3 items-center justify-items-start gap-4'>
                       <Label htmlFor='name'>Tên</Label>
-                      <div className='col-span-3 w-full space-y-2'>
+                      <div className='col-span-2 w-full space-y-2'>
                         <Input id='name' className='w-full' {...field} />
                         <FormMessage />
                       </div>
@@ -114,9 +158,9 @@ export default function AddEmployee() {
                 name='email'
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
+                    <div className='grid grid-cols-3 items-center justify-items-start gap-4'>
                       <Label htmlFor='email'>Email</Label>
-                      <div className='col-span-3 w-full space-y-2'>
+                      <div className='col-span-2 w-full space-y-2'>
                         <Input id='email' className='w-full' {...field} />
                         <FormMessage />
                       </div>
@@ -129,9 +173,9 @@ export default function AddEmployee() {
                 name='password'
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
+                    <div className='grid grid-cols-3 items-center justify-items-start gap-4'>
                       <Label htmlFor='password'>Mật khẩu</Label>
-                      <div className='col-span-3 w-full space-y-2'>
+                      <div className='col-span-2 w-full space-y-2'>
                         <Input id='password' className='w-full' type='password' {...field} />
                         <FormMessage />
                       </div>
@@ -144,9 +188,9 @@ export default function AddEmployee() {
                 name='confirmPassword'
                 render={({ field }) => (
                   <FormItem>
-                    <div className='grid grid-cols-4 items-center justify-items-start gap-4'>
+                    <div className='grid grid-cols-3 items-center justify-items-start gap-4'>
                       <Label htmlFor='confirmPassword'>Xác nhận mật khẩu</Label>
-                      <div className='col-span-3 w-full space-y-2'>
+                      <div className='col-span-2 w-full space-y-2'>
                         <Input id='confirmPassword' className='w-full' type='password' {...field} />
                         <FormMessage />
                       </div>
