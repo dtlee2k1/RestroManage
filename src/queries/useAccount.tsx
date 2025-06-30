@@ -1,5 +1,6 @@
 import accountApiRequest from '@/apiRequests/account'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { UpdateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 export function useAccountMeQuery() {
   return useQuery({
@@ -10,7 +11,6 @@ export function useAccountMeQuery() {
 
 export function useUpdateMeMutation() {
   return useMutation({
-    mutationKey: ['account-me'],
     mutationFn: accountApiRequest.updateMe
   })
 }
@@ -18,5 +18,50 @@ export function useUpdateMeMutation() {
 export function useChangePasswordMutation() {
   return useMutation({
     mutationFn: accountApiRequest.changePassword
+  })
+}
+
+export function useGetAccountListQuery() {
+  return useQuery({
+    queryKey: ['accounts'],
+    queryFn: accountApiRequest.list
+  })
+}
+
+export function useGetAccountQuery({ id }: { id: string }) {
+  return useQuery({
+    queryKey: ['accounts', id],
+    queryFn: () => accountApiRequest.getEmployee(id)
+  })
+}
+
+export function useAddAccountMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: accountApiRequest.addEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    }
+  })
+}
+
+export function useUpdateAccountMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateEmployeeAccountBodyType }) =>
+      accountApiRequest.updateEmployee(id, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    }
+  })
+}
+
+export function useDeleteAccountMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: accountApiRequest.deleteEmployee,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+    }
   })
 }
