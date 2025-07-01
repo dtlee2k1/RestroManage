@@ -5,6 +5,15 @@ import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
 import jwt from 'jsonwebtoken'
 import authApiRequest from '@/apiRequests/auth'
+import {
+  DishStatus,
+  DishStatusType,
+  OrderStatus,
+  OrderStatusType,
+  TableStatus,
+  TableStatusType
+} from '@/constants/type'
+import envConfig from '@/config'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -101,4 +110,52 @@ export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; on
       isRefreshing = false
     }
   }
+}
+
+export const formatCurrency = (number: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(number)
+}
+
+export const getVietnameseDishStatus = (status: DishStatusType) => {
+  switch (status) {
+    case DishStatus.Available:
+      return 'Có sẵn'
+    case DishStatus.Unavailable:
+      return 'Không có sẵn'
+    default:
+      return 'Ẩn'
+  }
+}
+
+export const getVietnameseOrderStatus = (status: OrderStatusType) => {
+  switch (status) {
+    case OrderStatus.Delivered:
+      return 'Đã phục vụ'
+    case OrderStatus.Paid:
+      return 'Đã thanh toán'
+    case OrderStatus.Pending:
+      return 'Chờ xử lý'
+    case OrderStatus.Processing:
+      return 'Đang nấu'
+    default:
+      return 'Từ chối'
+  }
+}
+
+export const getVietnameseTableStatus = (status: TableStatusType) => {
+  switch (status) {
+    case TableStatus.Available:
+      return 'Có sẵn'
+    case TableStatus.Reserved:
+      return 'Đã đặt'
+    default:
+      return 'Ẩn'
+  }
+}
+
+export const getTableLink = ({ token, tableNumber }: { token: string; tableNumber: number }) => {
+  return envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
 }

@@ -20,6 +20,7 @@ export const DishStatus = {
 } as const
 
 export const DishStatusValues = [DishStatus.Available, DishStatus.Unavailable, DishStatus.Hidden] as const
+export type DishStatusType = (typeof DishStatus)[keyof typeof DishStatus]
 
 export const TableStatus = {
   Available: 'Available',
@@ -28,6 +29,7 @@ export const TableStatus = {
 } as const
 
 export const TableStatusValues = [TableStatus.Available, TableStatus.Hidden, TableStatus.Reserved] as const
+export type TableStatusType = (typeof TableStatus)[keyof typeof TableStatus]
 
 export const OrderStatus = {
   Pending: 'Pending',
@@ -44,5 +46,6 @@ export const OrderStatusValues = [
   OrderStatus.Delivered,
   OrderStatus.Paid
 ] as const
+export type OrderStatusType = (typeof OrderStatus)[keyof typeof OrderStatus]
 
 export const ManagerRoom = 'manager' as const
