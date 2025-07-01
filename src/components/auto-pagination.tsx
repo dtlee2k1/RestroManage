@@ -68,7 +68,6 @@ export default function AutoPagination({ page, pageSize, pathname }: Props) {
       .map((_, index) => {
         const pageNumber = index + 1
 
-        // Điều kiện để return về ...
         if (page <= RANGE * 2 + 1 && pageNumber > page + RANGE && pageNumber < pageSize - RANGE + 1) {
           return renderDotAfter(index)
         } else if (page > RANGE * 2 + 1 && page < pageSize - RANGE * 2) {
