@@ -28,10 +28,11 @@ export function useGetAccountListQuery() {
   })
 }
 
-export function useGetAccountQuery({ id }: { id: string }) {
+export function useGetAccountQuery({ id }: { id: number }) {
   return useQuery({
     queryKey: ['accounts', id],
-    queryFn: () => accountApiRequest.getEmployee(id)
+    queryFn: () => accountApiRequest.getEmployee(id),
+    enabled: Boolean(id)
   })
 }
 
@@ -48,10 +49,10 @@ export function useAddAccountMutation() {
 export function useUpdateAccountMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateEmployeeAccountBodyType }) =>
+    mutationFn: ({ id, body }: { id: number; body: UpdateEmployeeAccountBodyType }) =>
       accountApiRequest.updateEmployee(id, body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['accounts'] })
+      queryClient.invalidateQueries({ queryKey: ['accounts'], exact: true })
     }
   })
 }

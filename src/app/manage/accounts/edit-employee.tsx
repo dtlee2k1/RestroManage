@@ -13,11 +13,15 @@ import { Label } from '@/components/ui/label'
 import { UpdateEmployeeAccountBody, UpdateEmployeeAccountBodyType } from '@/schemaValidations/account.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Upload } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Switch } from '@/components/ui/switch'
+import { useGetAccountQuery, useUpdateAccountMutation } from '@/queries/useAccount'
+import { useUploadMediaMutation } from '@/queries/useMedia'
+import { toast } from 'sonner'
+import { handleErrorApi } from '@/lib/utils'
 
 export default function EditEmployee({
   id,
@@ -28,6 +32,11 @@ export default function EditEmployee({
   setId: (value: number | undefined) => void
   onSubmitSuccess?: () => void
 }) {
+  const { data } = useGetAccountQuery({
+    id: id as number
+  })
+  const uploadMediaMutation = useUploadMediaMutation()
+  const updateAccountMutation = useUpdateAccountMutation()
   const [file, setFile] = useState<File | null>(null)
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const form = useForm<UpdateEmployeeAccountBodyType>({
@@ -52,12 +61,64 @@ export default function EditEmployee({
     return avatar
   }, [file, avatar])
 
+  const onReset = () => {
+    form.reset()
+    setId(undefined)
+    setFile(null)
+  }
+
+  const onSubmit = async (values: UpdateEmployeeAccountBodyType) => {
+    if (updateAccountMutation.isPending) return
+
+    try {
+      let avatarUrl = values.avatar
+      if (file) {
+        const formData = new FormData()
+        formData.append('file', file)
+        const uploadRes = await uploadMediaMutation.mutateAsync(formData)
+        avatarUrl = uploadRes.payload.data
+      }
+
+      const result = await updateAccountMutation.mutateAsync({
+        id: id as number,
+        body: {
+          ...values,
+          avatar: avatarUrl
+        }
+      })
+      toast.success(result.payload.message)
+      onReset()
+      setId(undefined)
+      onSubmitSuccess?.()
+    } catch (error) {
+      handleErrorApi({
+        error,
+        setError: form.setError
+      })
+    }
+  }
+
+  useEffect(() => {
+    if (data) {
+      const { name, email, avatar } = data.payload.data
+
+      form.reset({
+        name,
+        email,
+        avatar: avatar || undefined,
+        changePassword: false,
+        password: form.getValues('password'),
+        confirmPassword: form.getValues('confirmPassword')
+      })
+    }
+  }, [data, form])
+
   return (
     <Dialog
       open={Boolean(id)}
       onOpenChange={(value) => {
         if (!value) {
-          setId(undefined)
+          onReset()
         }
       }}
     >
@@ -67,12 +128,18 @@ export default function EditEmployee({
           <DialogDescription>Các trường tên, email, mật khẩu là bắt buộc</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form noValidate className='grid auto-rows-max items-start gap-4 md:gap-8' id='edit-employee-form'>
+          <form
+            noValidate
+            className='grid auto-rows-max items-start gap-4 md:gap-8'
+            id='edit-employee-form'
+            onSubmit={form.handleSubmit(onSubmit)}
+            onReset={onReset}
+          >
             <div className='grid gap-4 py-4'>
               <FormField
                 control={form.control}
                 name='avatar'
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <div className='flex gap-2 items-start justify-start'>
                       <Avatar className='aspect-square w-[100px] h-[100px] rounded-md object-cover'>
@@ -87,7 +154,6 @@ export default function EditEmployee({
                           const file = e.target.files?.[0]
                           if (file) {
                             setFile(file)
-                            field.onChange('http://localhost:3000/' + file.name)
                           }
                         }}
                         className='hidden'
