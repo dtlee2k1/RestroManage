@@ -86,7 +86,6 @@ export default function EditDish({
       })
       toast.success(result.payload.message)
       onReset()
-      setId(undefined)
       onSubmitSuccess?.()
     } catch (error) {
       handleErrorApi({

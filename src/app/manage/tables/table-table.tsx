@@ -36,12 +36,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { getVietnameseTableStatus } from '@/lib/utils'
+import { getVietnameseTableStatus, handleErrorApi } from '@/lib/utils'
 import { useSearchParams } from 'next/navigation'
 import AutoPagination from '@/components/auto-pagination'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import EditTable from '@/app/manage/tables/edit-table'
 import AddTable from '@/app/manage/tables/add-table'
+import { useDeleteTableMutation, useGetTableListQuery } from '@/queries/useTable'
+import TableQRCode from '@/components/table-qrcode'
+import { toast } from 'sonner'
 
 type TableItem = TableListResType['data'][0]
 
@@ -61,7 +64,11 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'number',
     header: 'Số bàn',
-    cell: ({ row }) => <div className='capitalize'>{row.getValue('number')}</div>
+    cell: ({ row }) => <div className='capitalize'>{row.getValue('number')}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) return true
+      return String(row.getValue('number')) === String(filterValue)
+    }
   },
   {
     accessorKey: 'capacity',
@@ -76,7 +83,7 @@ export const columns: ColumnDef<TableItem>[] = [
   {
     accessorKey: 'token',
     header: 'QR Code',
-    cell: ({ row }) => <div>{row.getValue('number')}</div>
+    cell: ({ row }) => <TableQRCode key={row.id} token={row.getValue('token')} tableNumber={row.getValue('number')} />
   },
   {
     id: 'actions',
@@ -117,6 +124,22 @@ function AlertDialogDeleteTable({
   tableDelete: TableItem | null
   setTableDelete: (value: TableItem | null) => void
 }) {
+  const deleteTableMutation = useDeleteTableMutation()
+
+  const handleDeleteTable = async () => {
+    if (tableDelete) {
+      try {
+        const result = await deleteTableMutation.mutateAsync(tableDelete.number)
+        toast.success(result.payload.message)
+        setTableDelete(null)
+      } catch (error) {
+        handleErrorApi({
+          error
+        })
+      }
+    }
+  }
+
   return (
     <AlertDialog
       open={Boolean(tableDelete)}
@@ -136,7 +159,7 @@ function AlertDialogDeleteTable({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogAction onClick={handleDeleteTable}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -145,12 +168,12 @@ function AlertDialogDeleteTable({
 
 const PAGE_SIZE = 10
 export default function TableTable() {
+  const tableListQuery = useGetTableListQuery()
   const searchParam = useSearchParams()
   const page = searchParam.get('page') ? Number(searchParam.get('page')) : 1
   const pageIndex = page - 1
   const [tableIdEdit, setTableIdEdit] = useState<number | undefined>()
   const [tableDelete, setTableDelete] = useState<TableItem | null>(null)
-  const data: any[] = []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -159,6 +182,8 @@ export default function TableTable() {
     pageIndex,
     pageSize: PAGE_SIZE
   })
+
+  const data = tableListQuery.data?.payload.data ?? []
 
   const table = useReactTable({
     data,
@@ -197,7 +222,7 @@ export default function TableTable() {
         <div className='flex items-center py-4'>
           <Input
             placeholder='Lọc số bàn'
-            value={(table.getColumn('number')?.getFilterValue() as string) ?? ''}
+            value={(table.getColumn('number')?.getFilterValue() as string) || ''}
             onChange={(event) => table.getColumn('number')?.setFilterValue(event.target.value)}
             className='max-w-sm'
           />
