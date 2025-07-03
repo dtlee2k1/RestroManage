@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAddDishMutation } from '@/queries/useDish'
 import { useUploadMediaMutation } from '@/queries/useMedia'
 import { toast } from 'sonner'
+import revalidateTagApiRequest from '@/apiRequests/revalidate'
 
 export default function AddDish() {
   const addDishMutation = useAddDishMutation()
@@ -65,6 +66,7 @@ export default function AddDish() {
         ...values,
         image: avatarUrl
       })
+      await revalidateTagApiRequest.revalidateTag('dishes')
       toast.success(result.payload.message)
       onReset()
       setOpen(false)

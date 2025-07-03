@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useUploadMediaMutation } from '@/queries/useMedia'
 import { useGetDishQuery, useUpdateDishMutation } from '@/queries/useDish'
 import { toast } from 'sonner'
+import revalidateTagApiRequest from '@/apiRequests/revalidate'
 
 export default function EditDish({
   id,
@@ -84,6 +85,7 @@ export default function EditDish({
           image: avatarUrl
         }
       })
+      await revalidateTagApiRequest.revalidateTag('dishes')
       toast.success(result.payload.message)
       onReset()
       onSubmitSuccess?.()
