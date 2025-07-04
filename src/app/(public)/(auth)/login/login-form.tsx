@@ -19,7 +19,7 @@ export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isClearTokens = searchParams.get('clearTokens')
-  const { setIsAuth } = useAppContext()
+  const { setRole } = useAppContext()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -34,7 +34,7 @@ export default function LoginForm() {
     try {
       const res = await loginMutation.mutateAsync(data)
       toast.success(res.payload.message)
-      setIsAuth(true)
+      setRole(res.payload.data.account.role)
       router.push('/manage/dashboard')
     } catch (error) {
       handleErrorApi({
@@ -46,9 +46,9 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (isClearTokens) {
-      setIsAuth(false)
+      setRole()
     }
-  }, [isClearTokens, setIsAuth])
+  }, [isClearTokens, setRole])
 
   return (
     <Card className='w-full max-w-sm'>

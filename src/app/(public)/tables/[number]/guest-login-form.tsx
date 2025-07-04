@@ -7,14 +7,45 @@ import { useForm } from 'react-hook-form'
 import { Form, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { GuestLoginBody, GuestLoginBodyType } from '@/schemaValidations/guest.schema'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useGuestLoginMutation } from '@/queries/useGuest'
+import { handleErrorApi } from '@/lib/utils'
+import { useEffect } from 'react'
+import { useAppContext } from '@/components/app-provider'
 
 export default function GuestLoginForm() {
+  const { setRole } = useAppContext()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const params = useParams()
+  const tableNumber = Number(params.number)
+  const token = searchParams.get('token')
+
+  const guestLoginMutation = useGuestLoginMutation()
+
   const form = useForm<GuestLoginBodyType>({
     resolver: zodResolver(GuestLoginBody),
     defaultValues: {
-      name: ''
+      name: '',
+      token: token ?? '',
+      tableNumber
     }
   })
+
+  const onSubmit = async (data: GuestLoginBodyType) => {
+    if (guestLoginMutation.isPending) return
+    try {
+      const res = await guestLoginMutation.mutateAsync(data)
+      setRole(res.payload.data.guest.role)
+      router.push('/guest/menu')
+    } catch (error) {
+      handleErrorApi({ error })
+    }
+  }
+
+  useEffect(() => {
+    if (!token) router.push(`/`)
+  }, [router, token])
 
   return (
     <Card className='mx-auto max-w-sm'>
@@ -23,7 +54,11 @@ export default function GuestLoginForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form className='space-y-2 max-w-[600px] flex-shrink-0 w-full' noValidate>
+          <form
+            className='space-y-2 max-w-[600px] flex-shrink-0 w-full'
+            noValidate
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <div className='grid gap-4'>
               <FormField
                 control={form.control}

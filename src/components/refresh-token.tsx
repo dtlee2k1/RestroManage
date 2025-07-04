@@ -9,13 +9,13 @@ const UNAUTHENTICATED_PATHS = ['/login', '/register', '/refresh-token']
 export default function RefreshToken() {
   const pathName = usePathname()
   const router = useRouter()
-  const { setIsAuth } = useAppContext()
+  const { setRole } = useAppContext()
 
   useEffect(() => {
     if (UNAUTHENTICATED_PATHS.includes(pathName)) return
     const handleError = () => {
       clearInterval(refreshInterval)
-      setIsAuth(false)
+      setRole()
       router.push('/login')
     }
 
@@ -26,7 +26,7 @@ export default function RefreshToken() {
     }, 60 * 1000) // 1 min
 
     return () => clearInterval(refreshInterval)
-  }, [pathName, router, setIsAuth])
+  }, [pathName, router, setRole])
 
   return null
 }

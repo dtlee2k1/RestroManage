@@ -14,6 +14,7 @@ import {
   TableStatusType
 } from '@/constants/type'
 import envConfig from '@/config'
+import { TokenPayload } from '@/types/jwt.types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -82,8 +83,8 @@ export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; on
 
   if (!accessToken || !refreshToken) return
 
-  const decodedAccessToken = jwt.decode(accessToken) as { exp: number; iat: number }
-  const decodedRefreshToken = jwt.decode(refreshToken) as { exp: number; iat: number }
+  const decodedAccessToken = decodedToken(accessToken)
+  const decodedRefreshToken = decodedToken(refreshToken)
 
   const now = Math.round(Date.now() / 1000)
   const remaining = decodedAccessToken.exp - now
@@ -158,4 +159,8 @@ export const getVietnameseTableStatus = (status: TableStatusType) => {
 
 export const getTableLink = ({ token, tableNumber }: { token: string; tableNumber: number }) => {
   return envConfig.NEXT_PUBLIC_URL + '/tables/' + tableNumber + '?token=' + token
+}
+
+export const decodedToken = (token: string) => {
+  return jwt.decode(token) as TokenPayload
 }

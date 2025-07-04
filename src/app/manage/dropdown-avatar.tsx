@@ -20,7 +20,7 @@ export default function DropdownAvatar() {
   const logoutMutation = useLogoutMutation()
   const router = useRouter()
   const { data } = useAccountMeQuery()
-  const { setIsAuth } = useAppContext()
+  const { setRole } = useAppContext()
 
   const account = data?.payload.data
 
@@ -29,7 +29,7 @@ export default function DropdownAvatar() {
 
     try {
       await logoutMutation.mutateAsync()
-      setIsAuth(false)
+      setRole()
       router.push('/')
     } catch (error) {
       handleErrorApi({ error })
