@@ -3,7 +3,20 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ['localhost', 'api-bigboy.duthanhduoc.com'] // 👈 thêm dòng này
+    remotePatterns: [
+      {
+        hostname: 'localhost',
+        pathname: '/**'
+      },
+      {
+        hostname: 'placehold.co',
+        pathname: '/**'
+      },
+      {
+        hostname: 'api-bigboy.duthanhduoc.com',
+        pathname: '/**'
+      }
+    ]
   }
 }
 
