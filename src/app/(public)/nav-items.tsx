@@ -1,42 +1,87 @@
 'use client'
 
 import { useAppContext } from '@/components/app-provider'
+import { Role } from '@/constants/type'
+import { cn, handleErrorApi } from '@/lib/utils'
+import { useLogoutMutation } from '@/queries/useAuth'
+import { RoleType } from '@/types/jwt.types'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
-const menuItems = [
+const menuItems: {
+  title: string
+  href: string
+  hideWhenLogin?: boolean
+  role?: RoleType[]
+}[] = [
   {
-    title: 'Món ăn',
-    href: '/menu'
+    title: 'Trang chủ',
+    href: '/'
   },
   {
-    title: 'Đơn hàng',
-    href: '/orders',
-    authRequired: true
+    title: 'Menu',
+    href: '/guest/menu',
+    role: [Role.Guest]
   },
   {
     title: 'Đăng nhập',
     href: '/login',
-    authRequired: false
+    hideWhenLogin: true
   },
   {
     title: 'Quản lý',
     href: '/manage/dashboard',
-    authRequired: true
+    role: [Role.Owner, Role.Employee]
   }
 ]
 
 export default function NavItems({ className }: { className?: string }) {
-  const { isAuth } = useAppContext()
+  const { role, setRole } = useAppContext()
+  const logoutMutation = useLogoutMutation()
+  const router = useRouter()
+  const isLoggedIn = !!role
 
-  return menuItems.map((item) => {
-    if ((item.authRequired === true && !isAuth) || (item.authRequired === false && isAuth)) {
-      return null
+  const handleLogout = async () => {
+    if (logoutMutation.isPending) return
+
+    try {
+      await logoutMutation.mutateAsync()
+      setRole()
+      router.push('/')
+    } catch (error) {
+      handleErrorApi({ error })
     }
+  }
+  return (
+    <>
+      {menuItems.map((item) => {
+        const requiredRoles = item.role
 
-    return (
-      <Link href={item.href} key={item.href} className={className}>
-        {item.title}
-      </Link>
-    )
-  })
+        if (isLoggedIn && item.hideWhenLogin) return null
+
+        if (!requiredRoles) {
+          return (
+            <Link href={item.href} key={item.href} className={className}>
+              {item.title}
+            </Link>
+          )
+        }
+
+        if (role && requiredRoles.includes(role)) {
+          return (
+            <Link href={item.href} key={item.href} className={className}>
+              {item.title}
+            </Link>
+          )
+        }
+
+        return null
+      })}
+      {role && (
+        <div className={cn(className, 'cursor-pointer, lg:hidden')} onClick={handleLogout}>
+          Đăng xuất
+        </div>
+      )}
+    </>
+  )
 }

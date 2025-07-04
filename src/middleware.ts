@@ -1,6 +1,10 @@
+import { Role } from '@/constants/type'
+import { decodedToken } from '@/lib/utils'
 import { NextResponse, NextRequest } from 'next/server'
 
-const privatePaths = ['/manage']
+const managePaths = ['/manage']
+const guestPaths = ['/guest']
+const privatePaths = [...managePaths, ...guestPaths]
 const authPaths = ['/login']
 
 export function middleware(request: NextRequest) {
@@ -15,21 +19,31 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (authPaths.some((path) => pathname.startsWith(path)) && refreshToken) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
+  if (refreshToken) {
+    if (authPaths.some((path) => pathname.startsWith(path))) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
 
-  if (privatePaths.some((path) => pathname.startsWith(path)) && refreshToken && !accessToken) {
-    const url = new URL('/refresh-token', request.url)
-    url.searchParams.set('refreshToken', refreshToken)
-    url.searchParams.set('redirect', pathname)
+    if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken) {
+      const url = new URL('/refresh-token', request.url)
+      url.searchParams.set('refreshToken', refreshToken)
+      url.searchParams.set('redirect', pathname)
 
-    return NextResponse.redirect(url)
+      return NextResponse.redirect(url)
+    }
+
+    const role = decodedToken(refreshToken).role
+    if (
+      (role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))) ||
+      (role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path)))
+    ) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/manage/:path*', '/login', '/menu', '/orders']
+  matcher: ['/manage/:path*', '/guest/:path*', '/login']
 }

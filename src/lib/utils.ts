@@ -10,11 +10,13 @@ import {
   DishStatusType,
   OrderStatus,
   OrderStatusType,
+  Role,
   TableStatus,
   TableStatusType
 } from '@/constants/type'
 import envConfig from '@/config'
 import { TokenPayload } from '@/types/jwt.types'
+import guestApiRequest from '@/apiRequests/guest'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -100,7 +102,8 @@ export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; on
   if (remaining < tokenTTL / 3 && !isRefreshing) {
     isRefreshing = true
     try {
-      const result = await authApiRequest.refreshToken()
+      const role = decodedRefreshToken.role
+      const result = role === Role.Guest ? await guestApiRequest.refreshToken() : await authApiRequest.refreshToken()
       const { accessToken, refreshToken } = result.payload.data
       setAccessTokenToLocalStorage(accessToken)
       setRefreshTokenToLocalStorage(refreshToken)
