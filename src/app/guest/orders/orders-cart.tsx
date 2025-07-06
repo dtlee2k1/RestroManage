@@ -1,13 +1,16 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import socket from '@/lib/socket'
 import { formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestGetOrderListQuery } from '@/queries/useGuest'
+import { UpdateOrderResType } from '@/schemaValidations/order.schema'
 import Image from 'next/image'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
+import { toast } from 'sonner'
 
 export default function OrdersCart() {
-  const { data } = useGuestGetOrderListQuery()
+  const { data, refetch } = useGuestGetOrderListQuery()
   const orders = useMemo(() => data?.payload.data || [], [data])
 
   const totalPrice = useMemo(
@@ -18,7 +21,40 @@ export default function OrdersCart() {
     [orders]
   )
 
-  console.log(totalPrice)
+  useEffect(() => {
+    if (socket.connected) {
+      onConnect()
+    }
+    function onConnect() {
+      console.log(socket.id)
+    }
+
+    function onDisconnect() {
+      console.log('socket disconnected')
+    }
+
+    function onUpdateOrder(data: UpdateOrderResType['data']) {
+      const { name } = data.dishSnapshot
+      toast.success(
+        `Món ${name} (SL: ${data.quantity}) đã được cập nhật sang trạng thái ${getVietnameseOrderStatus(data.status)}`
+      )
+      refetch()
+    }
+
+    socket.on('update-order', (data) => {
+      onUpdateOrder(data)
+    })
+
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+
+    return () => {
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+      socket.off('update-order', onUpdateOrder)
+    }
+  }, [refetch])
+
   return (
     <>
       {orders.map((order, index) => (
@@ -31,6 +67,7 @@ export default function OrdersCart() {
               height={100}
               width={100}
               quality={100}
+              priority
               className='object-cover w-[80px] h-[80px] rounded-md'
             />
           </div>

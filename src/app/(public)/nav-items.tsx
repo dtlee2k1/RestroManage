@@ -1,10 +1,19 @@
 'use client'
 
 import { useAppContext } from '@/components/app-provider'
+import { AlertDialog, AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog'
 import { Role } from '@/constants/type'
 import { cn, handleErrorApi } from '@/lib/utils'
 import { useLogoutMutation } from '@/queries/useAuth'
 import { RoleType } from '@/types/jwt.types'
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -83,9 +92,21 @@ export default function NavItems({ className }: { className?: string }) {
         return null
       })}
       {role && (
-        <div className={cn(className, 'cursor-pointer, lg:hidden')} onClick={handleLogout}>
-          Đăng xuất
-        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <div className={cn(className, 'cursor-pointer, lg:hidden')}>Đăng xuất</div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Bạn có muốn đăng xuất không?</AlertDialogTitle>
+              <AlertDialogDescription>Hành động đăng xuất sẽ làm mất hoá đơn của bạn</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Thoát</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>Đăng xuất</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
     </>
   )
