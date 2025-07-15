@@ -63,6 +63,7 @@ export const useOrderService = (orderList: GetOrdersResType['data']) => {
         servingGuestByTableNumber[Number(tableNumber)] = servingGuestObject
       }
     }
+
     return {
       statics,
       orderObjectByGuestId,
