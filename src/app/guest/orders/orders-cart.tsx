@@ -1,6 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
+import { OrderStatus, OrderStatusType } from '@/constants/type'
 import socket from '@/lib/socket'
 import { formatCurrency, getVietnameseOrderStatus } from '@/lib/utils'
 import { useGuestGetOrderListQuery } from '@/queries/useGuest'
@@ -20,6 +21,46 @@ export default function OrdersCart() {
       }, 0),
     [orders]
   )
+
+  const { pendingOrders, paidOrders } = useMemo(() => {
+    return orders.reduce(
+      (total, order) => {
+        if (
+          [OrderStatus.Delivered, OrderStatus.Processing, OrderStatus.Pending].includes(
+            order.status as Exclude<OrderStatusType, 'Paid' | 'Rejected'>
+          )
+        ) {
+          return {
+            ...total,
+            pendingOrders: {
+              price: total.pendingOrders.price + order.quantity * order.dishSnapshot.price,
+              quantity: total.pendingOrders.quantity + order.quantity
+            }
+          }
+        }
+        if (order.status === OrderStatus.Paid) {
+          return {
+            ...total,
+            paidOrders: {
+              price: total.paidOrders.price + order.quantity * order.dishSnapshot.price,
+              quantity: total.paidOrders.quantity + order.quantity
+            }
+          }
+        }
+        return total
+      },
+      {
+        pendingOrders: {
+          price: 0,
+          quantity: 0
+        },
+        paidOrders: {
+          price: 0,
+          quantity: 0
+        }
+      }
+    )
+  }, [orders])
 
   useEffect(() => {
     if (socket.connected) {
@@ -80,10 +121,18 @@ export default function OrdersCart() {
           </div>
         </div>
       ))}
+      {paidOrders.quantity > 0 && (
+        <div className='sticky bottom-0'>
+          <div className='w-full justify-between flex space-x-4 text-xl font-semibold'>
+            <span>Đơn đã thanh toán · {paidOrders.quantity} món</span>
+            <span>{formatCurrency(paidOrders.price)}</span>
+          </div>
+        </div>
+      )}
       <div className='sticky bottom-0'>
         <div className='w-full justify-between flex space-x-4 text-xl font-semibold'>
-          <span>Tổng cộng · {orders.length} món</span>
-          <span>{formatCurrency(totalPrice)}</span>
+          <span>Đơn chưa thanh toán · {pendingOrders.quantity} món</span>
+          <span>{formatCurrency(pendingOrders.price)}</span>
         </div>
       </div>
     </>

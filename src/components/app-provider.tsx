@@ -10,8 +10,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false
+      refetchOnWindowFocus: false
     },
     mutations: {
       retry: false
