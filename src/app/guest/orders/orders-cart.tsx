@@ -41,9 +41,7 @@ export default function OrdersCart() {
       refetch()
     }
 
-    socket.on('update-order', (data) => {
-      onUpdateOrder(data)
-    })
+    socket.on('update-order', onUpdateOrder)
 
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
