@@ -24,7 +24,7 @@ const orderApiRequest = {
 
   getOrderDetail: (orderId: number) => http.get<GetOrderDetailResType>(`/orders/${orderId}`),
 
-  createOrder: (body: CreateOrdersBodyType) => http.post<CreateOrdersResType>('/orders', body),
+  createOrders: (body: CreateOrdersBodyType) => http.post<CreateOrdersResType>('/orders', body),
 
   updateOrder: (orderId: number, body: UpdateOrderBodyType) => http.put<UpdateOrderResType>(`/orders/${orderId}`, body),
 

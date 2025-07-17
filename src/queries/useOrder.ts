@@ -17,6 +17,12 @@ export function useGetOrderDetailQuery({ orderId }: { orderId: number }) {
   })
 }
 
+export function useCreateOrdersMutation() {
+  return useMutation({
+    mutationFn: orderApiRequest.createOrders
+  })
+}
+
 export function useUpdateOrderMutation() {
   return useMutation({
     mutationFn: ({ orderId, body }: { orderId: number; body: UpdateOrderBodyType }) =>

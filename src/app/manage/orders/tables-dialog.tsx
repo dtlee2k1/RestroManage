@@ -159,7 +159,7 @@ export function TablesDialog({ onChoose }: { onChoose: (table: TableItem) => voi
                   ) : (
                     <TableRow>
                       <TableCell colSpan={columns.length} className='h-24 text-center'>
-                        No results.
+                        No results
                       </TableCell>
                     </TableRow>
                   )}
