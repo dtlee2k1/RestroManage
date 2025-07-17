@@ -12,7 +12,12 @@ import {
 } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { CreateOrdersResType, GetOrdersResType, UpdateOrderResType } from '@/schemaValidations/order.schema'
+import {
+  CreateOrdersResType,
+  GetOrdersResType,
+  PayGuestOrdersResType,
+  UpdateOrderResType
+} from '@/schemaValidations/order.schema'
 import AddOrder from '@/app/manage/orders/add-order'
 import EditOrder from '@/app/manage/orders/edit-order'
 import { createContext, useEffect, useState } from 'react'
@@ -169,8 +174,15 @@ export default function OrderTable() {
       refetch()
     }
 
+    function onPayment(data: PayGuestOrdersResType['data']) {
+      const { guest } = data[0]
+      toast.success(`Thanh toán thành công cho khách hàng ${guest?.name} tại bàn ${guest?.tableNumber}`)
+      refetch()
+    }
+
     socket.on('update-order', onUpdateOrder)
     socket.on('new-order', onNewOrder)
+    socket.on('payment', onPayment)
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
 
@@ -179,6 +191,7 @@ export default function OrderTable() {
       socket.off('disconnect', onDisconnect)
       socket.off('update-order', onUpdateOrder)
       socket.off('new-order', onNewOrder)
+      socket.off('payment', onPayment)
     }
   }, [refetchOrderList, fromDate, toDate])
 

@@ -23,3 +23,9 @@ export function useUpdateOrderMutation() {
       orderApiRequest.updateOrder(orderId, body)
   })
 }
+
+export function usePayForGuestMutation() {
+  return useMutation({
+    mutationFn: orderApiRequest.payGuestOrders
+  })
+}
