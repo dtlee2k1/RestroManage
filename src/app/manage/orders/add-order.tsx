@@ -22,7 +22,6 @@ import { useGetDishListQuery } from '@/queries/useDish'
 import { useCreateOrdersMutation } from '@/queries/useOrder'
 import { useCreateGuestMutation } from '@/queries/useAccount'
 import { toast } from 'sonner'
-import { set } from 'date-fns'
 
 export default function AddOrder() {
   const [open, setOpen] = useState(false)
@@ -94,7 +93,7 @@ export default function AddOrder() {
         toast.error('Vui lồng chọn khách hàng')
         return
       }
-      const result = await orderMutation.mutateAsync({
+      await orderMutation.mutateAsync({
         guestId,
         orders
       })
