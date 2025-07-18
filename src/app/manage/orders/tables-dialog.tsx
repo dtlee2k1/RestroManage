@@ -19,6 +19,7 @@ import { cn, getVietnameseTableStatus, simpleMatchText } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { TableListResType } from '@/schemaValidations/table.schema'
 import { TableStatus } from '@/constants/type'
+import { useGetTableListQuery } from '@/queries/useTable'
 
 type TableItem = TableListResType['data'][0]
 
@@ -47,8 +48,11 @@ export const columns: ColumnDef<TableItem>[] = [
 const PAGE_SIZE = 10
 
 export function TablesDialog({ onChoose }: { onChoose: (table: TableItem) => void }) {
+  const { data } = useGetTableListQuery()
+
+  const tableList = data?.payload.data || []
+
   const [open, setOpen] = useState(false)
-  const data: TableListResType['data'] = []
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -59,7 +63,7 @@ export function TablesDialog({ onChoose }: { onChoose: (table: TableItem) => voi
   })
 
   const table = useReactTable({
-    data,
+    data: tableList,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -97,7 +101,7 @@ export function TablesDialog({ onChoose }: { onChoose: (table: TableItem) => voi
       <DialogTrigger asChild>
         <Button variant='outline'>Thay đổi</Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-[600px] max-h-full overflow-auto'>
+      <DialogContent className='sm:max-w-[600px] max-h-full overflow-auto' aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Chọn bàn</DialogTitle>
         </DialogHeader>
@@ -169,7 +173,7 @@ export function TablesDialog({ onChoose }: { onChoose: (table: TableItem) => voi
             <div className='flex items-center justify-end space-x-2 py-4'>
               <div className='text-xs text-muted-foreground py-4 flex-1 '>
                 Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong{' '}
-                <strong>{data.length}</strong> kết quả
+                <strong>{tableList.length}</strong> kết quả
               </div>
               <div>
                 <AutoPagination

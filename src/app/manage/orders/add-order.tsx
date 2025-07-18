@@ -16,16 +16,24 @@ import GuestsDialog from '@/app/manage/orders/guests-dialog'
 import { CreateOrdersBodyType } from '@/schemaValidations/order.schema'
 import Quantity from '@/app/guest/menu/quantity'
 import Image from 'next/image'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, handleErrorApi } from '@/lib/utils'
 import { DishStatus } from '@/constants/type'
-import { DishListResType } from '@/schemaValidations/dish.schema'
+import { useGetDishListQuery } from '@/queries/useDish'
+import { useCreateOrdersMutation } from '@/queries/useOrder'
+import { useCreateGuestMutation } from '@/queries/useAccount'
+import { toast } from 'sonner'
+import { set } from 'date-fns'
 
 export default function AddOrder() {
   const [open, setOpen] = useState(false)
   const [selectedGuest, setSelectedGuest] = useState<GetListGuestsResType['data'][0] | null>(null)
   const [isNewGuest, setIsNewGuest] = useState(true)
   const [orders, setOrders] = useState<CreateOrdersBodyType['orders']>([])
-  const dishes: DishListResType['data'] = []
+  const getDishList = useGetDishListQuery()
+  const dishes = useMemo(() => getDishList.data?.payload.data || [], [getDishList.data])
+
+  const orderMutation = useCreateOrdersMutation()
+  const createGuestMutation = useCreateGuestMutation()
 
   const totalPrice = useMemo(() => {
     return dishes.reduce((result, dish) => {
@@ -60,10 +68,52 @@ export default function AddOrder() {
     })
   }
 
-  const handleOrder = async () => {}
+  const reset = () => {
+    form.reset()
+    setSelectedGuest(null)
+    setIsNewGuest(true)
+    setOrders([])
+    setOpen(false)
+  }
+
+  const handleOrder = async () => {
+    try {
+      let guestId = selectedGuest?.id
+      if (isNewGuest) {
+        if (!name || !tableNumber) {
+          toast.error('Vui lòng nhập thống tin khách hàng')
+          return
+        }
+        const guest = await createGuestMutation.mutateAsync({
+          name,
+          tableNumber
+        })
+        guestId = guest.payload.data.id
+      }
+      if (!guestId) {
+        toast.error('Vui lồng chọn khách hàng')
+        return
+      }
+      const result = await orderMutation.mutateAsync({
+        guestId,
+        orders
+      })
+      reset()
+    } catch (error) {
+      handleErrorApi({ error, setError: form.setError })
+    }
+  }
 
   return (
-    <Dialog onOpenChange={setOpen} open={open}>
+    <Dialog
+      onOpenChange={(value) => {
+        if (!value) {
+          reset()
+        }
+        setOpen(value)
+      }}
+      open={open}
+    >
       <DialogTrigger asChild>
         <Button size='sm' className='h-7 gap-1'>
           <PlusCircle className='h-3.5 w-3.5' />

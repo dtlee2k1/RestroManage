@@ -19,6 +19,7 @@ import { formatDateTimeToLocaleString, simpleMatchText } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { GetListGuestsResType } from '@/schemaValidations/account.schema'
 import { endOfDay, format, startOfDay } from 'date-fns'
+import { useGetGuestListQuery } from '@/queries/useAccount'
 
 type GuestItem = GetListGuestsResType['data'][0]
 
@@ -64,7 +65,10 @@ export default function GuestsDialog({ onChoose }: { onChoose: (guest: GuestItem
   const [open, setOpen] = useState(false)
   const [fromDate, setFromDate] = useState(initFromDate)
   const [toDate, setToDate] = useState(initToDate)
-  const data: GetListGuestsResType['data'] = []
+
+  const guestListQuery = useGetGuestListQuery({ fromDate, toDate })
+  const guestList = guestListQuery.data?.payload.data || []
+
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -75,7 +79,7 @@ export default function GuestsDialog({ onChoose }: { onChoose: (guest: GuestItem
   })
 
   const table = useReactTable({
-    data,
+    data: guestList,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -118,7 +122,7 @@ export default function GuestsDialog({ onChoose }: { onChoose: (guest: GuestItem
       <DialogTrigger asChild>
         <Button variant='outline'>Chọn khách</Button>
       </DialogTrigger>
-      <DialogContent className='sm:max-w-[700px] max-h-full overflow-auto'>
+      <DialogContent className='sm:max-w-[700px] max-h-full overflow-auto' aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Chọn khách hàng</DialogTitle>
         </DialogHeader>
@@ -210,7 +214,7 @@ export default function GuestsDialog({ onChoose }: { onChoose: (guest: GuestItem
             <div className='flex items-center justify-end space-x-2 py-4'>
               <div className='text-xs text-muted-foreground py-4 flex-1 '>
                 Hiển thị <strong>{table.getPaginationRowModel().rows.length}</strong> trong{' '}
-                <strong>{data.length}</strong> kết quả
+                <strong>{guestList.length}</strong> kết quả
               </div>
               <div>
                 <AutoPagination
