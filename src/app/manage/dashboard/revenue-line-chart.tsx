@@ -4,6 +4,7 @@ import { CartesianGrid, Line, LineChart, XAxis } from 'recharts'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { format, parse } from 'date-fns'
+import { DashboardIndicatorResType } from '@/schemaValidations/indicator.schema'
 const chartConfig = {
   desktop: {
     label: 'Desktop',
@@ -11,55 +12,11 @@ const chartConfig = {
   }
 } satisfies ChartConfig
 
-export function RevenueLineChart() {
-  // fake 10 item
-  const chartData = [
-    {
-      date: '07/07/2025',
-      revenue: 1000
-    },
-    {
-      date: '08/07/2025',
-      revenue: 2000
-    },
-    {
-      date: '09/07/2025',
-      revenue: 1500
-    },
-    {
-      date: '10/07/2025',
-      revenue: 3000
-    },
-    {
-      date: '11/07/2025',
-      revenue: 2500
-    },
-    {
-      date: '12/07/2025',
-      revenue: 4000
-    },
-    {
-      date: '13/07/2025',
-      revenue: 3500
-    },
-    {
-      date: '14/07/2025',
-      revenue: 5000
-    },
-    {
-      date: '15/07/2025',
-      revenue: 4500
-    },
-    {
-      date: '16/07/2025',
-      revenue: 6000
-    }
-  ]
+export function RevenueLineChart({ chartData }: { chartData: DashboardIndicatorResType['data']['revenueByDate'] }) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Doanh thu</CardTitle>
-        {/* <CardDescription>January - June 2024</CardDescription> */}
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -89,18 +46,18 @@ export function RevenueLineChart() {
               }}
             />
             <ChartTooltip cursor={false} content={<ChartTooltipContent indicator='dashed' />} />
-            <Line dataKey='revenue' type='linear' stroke='var(--color-chart-1)' strokeWidth={2} dot={false} />
+            <Line
+              dataKey='revenue'
+              name={'Doanh thu'}
+              type='linear'
+              stroke='var(--color-chart-1)'
+              strokeWidth={2}
+              dot={false}
+            />
           </LineChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        {/* <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div>
-        <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
-        </div> */}
-      </CardFooter>
+      <CardFooter className='flex-col items-start gap-2 text-sm'></CardFooter>
     </Card>
   )
 }

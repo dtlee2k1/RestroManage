@@ -4,14 +4,10 @@ import { Bar, BarChart, XAxis, YAxis } from 'recharts'
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { DashboardIndicatorResType } from '@/schemaValidations/indicator.schema'
+import { useMemo } from 'react'
 
-const colors = [
-  'var(--color-chrome)',
-  'var(--color-safari)',
-  'var(--color-firefox)',
-  'var(--color-edge)',
-  'var(--color-other)'
-]
+const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)']
 
 const chartConfig = {
   visitors: {
@@ -45,7 +41,17 @@ const chartData = [
   { name: 'edge', successOrders: 173, fill: 'var(--chart-4)' },
   { name: 'other', successOrders: 90, fill: 'var(--chart-5)' }
 ]
-export function DishBarChart() {
+
+export function DishBarChart({ chartData }: { chartData: DashboardIndicatorResType['data']['dishIndicator'] }) {
+  const chartDataColors = useMemo(() => {
+    return chartData.map((item, index) => {
+      return {
+        ...item,
+        fill: colors[index] || 'var(--chart-1)'
+      }
+    })
+  }, [chartData])
+
   return (
     <Card>
       <CardHeader>
@@ -56,7 +62,7 @@ export function DishBarChart() {
         <ChartContainer config={chartConfig}>
           <BarChart
             accessibilityLayer
-            data={chartData}
+            data={chartDataColors}
             layout='vertical'
             margin={{
               left: 0
@@ -70,9 +76,8 @@ export function DishBarChart() {
               axisLine={false}
               tickFormatter={(value) => {
                 return value
-
-                // return chartConfig[value as keyof typeof chartConfig]?.label
               }}
+              width={80}
             />
             <XAxis dataKey='successOrders' type='number' hide />
             <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
@@ -80,14 +85,7 @@ export function DishBarChart() {
           </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className='flex-col items-start gap-2 text-sm'>
-        {/* <div className='flex gap-2 font-medium leading-none'>
-          Trending up by 5.2% this month <TrendingUp className='h-4 w-4' />
-        </div> */}
-        {/* <div className='leading-none text-muted-foreground'>
-          Showing total visitors for the last 6 months
-        </div> */}
-      </CardFooter>
+      <CardFooter className='flex-col items-start gap-2 text-sm'></CardFooter>
     </Card>
   )
 }
