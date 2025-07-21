@@ -4,7 +4,8 @@ import { NextResponse, NextRequest } from 'next/server'
 
 const managePaths = ['/manage']
 const guestPaths = ['/guest']
-const privatePaths = [...managePaths, ...guestPaths]
+const onlyOwnerPaths = ['/manage/accounts']
+const privatePaths = [...managePaths, ...guestPaths, ...onlyOwnerPaths]
 const authPaths = ['/login']
 
 export function middleware(request: NextRequest) {
@@ -33,10 +34,11 @@ export function middleware(request: NextRequest) {
     }
 
     const role = decodedToken(refreshToken).role
-    if (
-      (role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))) ||
-      (role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path)))
-    ) {
+    const isGuestGoToManagerPath = role === Role.Guest && managePaths.some((path) => pathname.startsWith(path))
+    const isNotGuestGoToGuestPath = role !== Role.Guest && guestPaths.some((path) => pathname.startsWith(path))
+    const isNotOwnerGoToOwnerPath = role !== Role.Owner && onlyOwnerPaths.some((path) => pathname.startsWith(path))
+
+    if (isGuestGoToManagerPath || isNotGuestGoToGuestPath || isNotOwnerGoToOwnerPath) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }
