@@ -81,7 +81,11 @@ export const removeTokensFromLocalStorage = () => {
 }
 
 let isRefreshing = false
-export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; onError?: () => void }) => {
+export const checkAndRefreshToken = async (params?: {
+  onSuccess?: () => void
+  onError?: () => void
+  force?: boolean
+}) => {
   const accessToken = getAccessTokenFromLocalStorage()
   const refreshToken = getRefreshTokenFromLocalStorage()
 
@@ -101,7 +105,7 @@ export const checkAndRefreshToken = async (params?: { onSuccess?: () => void; on
   }
 
   // access token is nearly expiry
-  if (remaining < tokenTTL / 3 && !isRefreshing) {
+  if ((remaining < tokenTTL / 3 && !isRefreshing) || params?.force) {
     isRefreshing = true
     try {
       const role = decodedRefreshToken.role

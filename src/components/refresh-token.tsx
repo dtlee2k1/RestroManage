@@ -1,6 +1,7 @@
 'use client'
 
 import { useAppContext } from '@/components/app-provider'
+import socket from '@/lib/socket'
 import { checkAndRefreshToken } from '@/lib/utils'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -19,13 +20,40 @@ export default function RefreshToken() {
       router.push('/login')
     }
 
-    checkAndRefreshToken({ onError: handleError })
+    const onRefreshToken = (force = false) => {
+      checkAndRefreshToken({ onError: handleError, force })
+    }
 
-    const refreshInterval = setInterval(() => {
-      checkAndRefreshToken({ onError: handleError })
-    }, 60 * 1000) // 1 min
+    onRefreshToken()
 
-    return () => clearInterval(refreshInterval)
+    const refreshInterval = setInterval(onRefreshToken, 60 * 1000) // 1 min
+
+    if (socket.connected) {
+      onConnect()
+    }
+    function onConnect() {
+      console.log(socket.id)
+    }
+
+    function onDisconnect() {
+      console.log('socket disconnected')
+    }
+
+    function onRefreshTokenSocket(data: any) {
+      console.log(data)
+      onRefreshToken(true)
+    }
+
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+    socket.on('refresh-token', onRefreshTokenSocket)
+
+    return () => {
+      clearInterval(refreshInterval)
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+      socket.off('refresh-token', onRefreshTokenSocket)
+    }
   }, [pathName, router, setRole])
 
   return null
