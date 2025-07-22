@@ -10,7 +10,7 @@ import {
   handleErrorApi
 } from '@/lib/utils'
 import { usePayForGuestMutation } from '@/queries/useOrder'
-import { GetOrdersResType } from '@/schemaValidations/order.schema'
+import { GetOrdersResType, PayGuestOrdersResType } from '@/schemaValidations/order.schema'
 import Image from 'next/image'
 import { Fragment } from 'react'
 import { toast } from 'sonner'
@@ -24,7 +24,7 @@ export default function OrderGuestDetail({
 }: {
   guest: Guest
   orders: Orders
-  onPaymentSuccess: () => void
+  onPaymentSuccess?: (data: PayGuestOrdersResType) => void
 }) {
   const ordersFilterToPurchase = guest
     ? orders.filter((order) => order.status !== OrderStatus.Paid && order.status !== OrderStatus.Rejected)
@@ -37,7 +37,7 @@ export default function OrderGuestDetail({
     try {
       const result = await payForGuestMutation.mutateAsync({ guestId: guest.id })
       toast.success(result.payload.message)
-      onPaymentSuccess()
+      onPaymentSuccess?.(result.payload)
     } catch (error) {
       handleErrorApi({ error })
     }

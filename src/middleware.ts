@@ -1,6 +1,11 @@
+import jwt from 'jsonwebtoken'
 import { Role } from '@/constants/type'
-import { decodedToken } from '@/lib/utils'
+import { TokenPayload } from '@/types/jwt.types'
 import { NextResponse, NextRequest } from 'next/server'
+
+const decodedToken = (token: string) => {
+  return jwt.decode(token) as TokenPayload
+}
 
 const managePaths = ['/manage']
 const guestPaths = ['/guest']

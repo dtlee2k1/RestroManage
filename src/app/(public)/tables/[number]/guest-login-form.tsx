@@ -9,12 +9,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { GuestLoginBody, GuestLoginBodyType } from '@/schemaValidations/guest.schema'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useGuestLoginMutation } from '@/queries/useGuest'
-import { handleErrorApi } from '@/lib/utils'
+import { generateSocketInstance, handleErrorApi } from '@/lib/utils'
 import { useEffect } from 'react'
 import { useAppContext } from '@/components/app-provider'
 
 export default function GuestLoginForm() {
-  const { setRole } = useAppContext()
+  const { setRole, setSocket } = useAppContext()
   const router = useRouter()
   const searchParams = useSearchParams()
   const params = useParams()
@@ -37,6 +37,7 @@ export default function GuestLoginForm() {
     try {
       const res = await guestLoginMutation.mutateAsync(data)
       setRole(res.payload.data.guest.role)
+      setSocket(generateSocketInstance(res.payload.data.accessToken))
       router.push('/guest/menu')
     } catch (error) {
       handleErrorApi({ error })

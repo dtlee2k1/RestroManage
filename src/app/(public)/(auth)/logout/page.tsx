@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense, useEffect, useRef } from 'react'
 
 function Logout() {
-  const { setRole } = useAppContext()
+  const { setRole, socket, setSocket } = useAppContext()
   const { mutateAsync } = useLogoutMutation()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -26,12 +26,14 @@ function Logout() {
 
       mutateAsync().then(() => {
         setRole()
+        socket?.disconnect()
+        setSocket()
         router.push('/login')
       })
     } else if (accessTokenFromURL !== getAccessTokenFromLocalStorage()) {
       router.push('/')
     }
-  }, [mutateAsync, router, refreshTokenFromURL, accessTokenFromURL, setRole])
+  }, [mutateAsync, router, refreshTokenFromURL, accessTokenFromURL, setRole, socket, setSocket])
 
   return <div>Logout...</div>
 }

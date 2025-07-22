@@ -9,7 +9,7 @@ import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLoginMutation } from '@/queries/useAuth'
 import { toast } from 'sonner'
-import { handleErrorApi } from '@/lib/utils'
+import { generateSocketInstance, handleErrorApi } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { useAppContext } from '@/components/app-provider'
@@ -19,7 +19,7 @@ export default function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isClearTokens = searchParams.get('clearTokens')
-  const { setRole } = useAppContext()
+  const { setRole, setSocket } = useAppContext()
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -35,6 +35,7 @@ export default function LoginForm() {
       const res = await loginMutation.mutateAsync(data)
       toast.success(res.payload.message)
       setRole(res.payload.data.account.role)
+      setSocket(generateSocketInstance(res.payload.data.accessToken))
       router.push('/manage/dashboard')
     } catch (error) {
       handleErrorApi({
