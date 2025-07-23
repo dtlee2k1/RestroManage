@@ -16,6 +16,11 @@ const authApiRequest = {
       baseUrl: ''
     }),
 
+  setTokenToCookie: (body: { accessToken: string; refreshToken: string }) =>
+    http.post('/api/auth/token', body, {
+      baseUrl: ''
+    }),
+
   sLogout: (
     body: LogoutBodyType & {
       accessToken: string
