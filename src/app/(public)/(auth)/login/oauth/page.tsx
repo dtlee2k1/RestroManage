@@ -35,7 +35,9 @@ export default function OAuthPage() {
           isRefreshing.current = false
         })
     } else {
-      toast.error(message || 'Lỗi không xác định')
+      setTimeout(() => {
+        toast.error(message || 'Lỗi không xác định')
+      })
     }
   }, [accessToken, refreshToken, setRole, setSocket, router, message, mutateAsync])
 
