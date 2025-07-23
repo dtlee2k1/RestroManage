@@ -1,6 +1,5 @@
 'use client'
 
-import { useAppContext } from '@/components/app-provider'
 import { AlertDialog, AlertDialogFooter, AlertDialogHeader } from '@/components/ui/alert-dialog'
 import { Role } from '@/constants/type'
 import { cn, handleErrorApi } from '@/lib/utils'
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAppStore } from '@/components/app-provider'
 
 const menuItems: {
   title: string
@@ -50,7 +50,11 @@ const menuItems: {
 ]
 
 export default function NavItems({ className }: { className?: string }) {
-  const { role, setRole, socket, setSocket } = useAppContext()
+  const role = useAppStore((state) => state.role)
+  const socket = useAppStore((state) => state.socket)
+  const setRole = useAppStore((state) => state.setRole)
+  const setSocket = useAppStore((state) => state.setSocket)
+
   const logoutMutation = useLogoutMutation()
   const router = useRouter()
   const isLoggedIn = !!role
