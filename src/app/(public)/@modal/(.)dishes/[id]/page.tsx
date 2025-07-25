@@ -1,9 +1,7 @@
 import dishApiRequest from '@/apiRequests/dish'
+import Modal from '@/app/(public)/@modal/(.)dishes/[id]/modal'
 import DishDetail from '@/app/(public)/dishes/[id]/dish-detail'
 import { wrapServerApi } from '@/lib/utils'
-import { cache } from 'react'
-
-const getDetail = cache((id: number) => wrapServerApi(() => dishApiRequest.getDish(id)))
 
 export default async function DishPage(props: {
   params: Promise<{
@@ -14,8 +12,12 @@ export default async function DishPage(props: {
 
   const { id } = params
 
-  const data = await getDetail(Number(id))
+  const data = await wrapServerApi(() => dishApiRequest.getDish(Number(id)))
 
   const dish = data?.payload?.data
-  return <DishDetail dish={dish} />
+  return (
+    <Modal>
+      <DishDetail dish={dish} />
+    </Modal>
+  )
 }

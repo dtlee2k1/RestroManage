@@ -222,3 +222,7 @@ export const wrapServerApi = async <T>(fn: () => Promise<T>) => {
   }
   return result
 }
+
+export const getIdFromSlugUrl = (slug: string) => {
+  return Number(slug.split('-i.')[1])
+}
