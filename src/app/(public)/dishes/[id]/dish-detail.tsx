@@ -1,12 +1,14 @@
 import { formatCurrency } from '@/lib/utils'
 import { DishResType } from '@/schemaValidations/dish.schema'
+import { getTranslations } from 'next-intl/server'
 import Image from 'next/image'
 
 export default async function DishDetail({ dish }: { dish: DishResType['data'] | undefined }) {
+  const t = await getTranslations('DishDetail')
   if (!dish)
     return (
       <div>
-        <h1 className='text-2xl lg:text-3xl font-semibold'>Món ăn không tồn tại</h1>
+        <h1 className='text-2xl lg:text-3xl font-semibold'>{t('notFound')}</h1>
       </div>
     )
 

@@ -7,6 +7,7 @@ import Link from 'next/link'
 
 export default async function Home() {
   const t = await getTranslations('HomePage')
+  const brandT = await getTranslations('Brand')
 
   let dishList: DishListResType['data'] = []
   try {
@@ -31,12 +32,12 @@ export default async function Home() {
           priority
         />
         <div className='z-20 relative py-10 md:py-20 px-4 sm:px-10 md:px-20'>
-          <h1 className='text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold'>Nhà hàng Restro</h1>
-          <p className='text-center text-sm sm:text-base mt-4'>Vị ngon, trọn khoảnh khắc</p>
+          <h1 className='text-center text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold'>{brandT('title')}</h1>
+          <p className='text-center text-sm sm:text-base mt-4'>{t('slogan')}</p>
         </div>
       </div>
       <section className='space-y-10 py-16'>
-        <h2 className='text-center text-2xl font-bold'>Đa dạng các món ăn</h2>
+        <h2 className='text-center text-2xl font-bold'>{t('h2')}</h2>
         <div className='grid grid-cols-1 sm:grid-cols-2 gap-10'>
           {dishList.map((dish, index) => (
             <Link href={`/dishes/${dish.id}`} className='flex gap-4 w-full' key={index}>

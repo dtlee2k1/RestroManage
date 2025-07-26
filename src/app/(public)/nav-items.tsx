@@ -16,6 +16,7 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAppStore } from '@/components/app-provider'
+import { useTranslations } from 'next-intl'
 
 const menuItems: {
   title: string
@@ -24,32 +25,34 @@ const menuItems: {
   role?: RoleType[]
 }[] = [
   {
-    title: 'Trang chủ',
+    title: 'home',
     href: '/'
   },
   {
-    title: 'Menu',
+    title: 'menu',
     href: '/guest/menu',
     role: [Role.Guest]
   },
   {
-    title: 'Đơn hàng',
+    title: 'orders',
     href: '/guest/orders',
     role: [Role.Guest]
   },
   {
-    title: 'Đăng nhập',
+    title: 'login',
     href: '/login',
     hideWhenLogin: true
   },
   {
-    title: 'Quản lý',
+    title: 'manage',
     href: '/manage/dashboard',
     role: [Role.Owner, Role.Employee]
   }
 ]
 
 export default function NavItems({ className }: { className?: string }) {
+  const t = useTranslations('NavItem')
+
   const role = useAppStore((state) => state.role)
   const socket = useAppStore((state) => state.socket)
   const setRole = useAppStore((state) => state.setRole)
@@ -82,7 +85,7 @@ export default function NavItems({ className }: { className?: string }) {
         if (!requiredRoles) {
           return (
             <Link href={item.href} key={item.href} className={className}>
-              {item.title}
+              {t(item.title as any)}
             </Link>
           )
         }
@@ -90,7 +93,7 @@ export default function NavItems({ className }: { className?: string }) {
         if (role && requiredRoles.includes(role)) {
           return (
             <Link href={item.href} key={item.href} className={className}>
-              {item.title}
+              {t(item.title as any)}
             </Link>
           )
         }
@@ -100,16 +103,16 @@ export default function NavItems({ className }: { className?: string }) {
       {role && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <div className={cn(className, 'cursor-pointer, lg:hidden')}>Đăng xuất</div>
+            <div className={cn(className, 'cursor-pointer, lg:hidden')}>{t('logout')}</div>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Bạn có muốn đăng xuất không?</AlertDialogTitle>
-              <AlertDialogDescription>Hành động đăng xuất sẽ làm mất hoá đơn của bạn</AlertDialogDescription>
+              <AlertDialogTitle>{t('logoutDialog.logoutQuestion')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('logoutDialog.logoutConfirm')}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Thoát</AlertDialogCancel>
-              <AlertDialogAction onClick={handleLogout}>Đăng xuất</AlertDialogAction>
+              <AlertDialogCancel>{t('logoutDialog.logoutConfirm')}</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout}>{t('logout')}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
